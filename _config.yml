@@ -23,4 +23,4 @@ repo_name: "TBD"
 repo: ucsb-cs156-s25/proj-dining-s25-04
 owner: ucsb-cs156-s25
 repo_name: proj-dining-s25-04
-pull_requests: []
+pull_requests: [{"author":{"id":"MDQ6VXNlcjQ5ODgzNjQy","is_bot":false,"login":"jeremiahwong704","name":"Jeremiah Wong"},"headRefName":"Jeremiah-Endpoint-Individual-Review","number":29,"title":"Added Endpoint for Individual Review","url":"https://github.com/ucsb-cs156-s25/proj-dining-s25-04/pull/29"}]
