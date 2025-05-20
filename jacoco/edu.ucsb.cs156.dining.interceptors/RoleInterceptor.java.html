@@ -39,26 +39,26 @@ import edu.ucsb.cs156.dining.entities.User;
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler){
 <span class="fc" id="L40">        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();</span>
 
-<span class="pc bpc" id="L42" title="1 of 2 branches missed.">        if (authentication.getClass() == OAuth2AuthenticationToken.class) {</span>
-<span class="nc" id="L43">            OAuth2User principal = ((OAuth2AuthenticationToken) authentication).getPrincipal();</span>
-<span class="nc" id="L44">            String email = principal.getAttribute(&quot;email&quot;);</span>
-<span class="nc" id="L45">            Optional&lt;User&gt; optionalUser = userRepository.findByEmail(email);</span>
-<span class="nc bnc" id="L46" title="All 2 branches missed.">            if (optionalUser.isPresent()) {</span>
-<span class="nc" id="L47">                User user = optionalUser.get();</span>
-<span class="nc" id="L48">                Collection&lt;? extends GrantedAuthority&gt; authorities = authentication.getAuthorities();</span>
-<span class="nc" id="L49">                Set&lt;GrantedAuthority&gt; revisedAuthorities = authorities.stream().filter(</span>
-<span class="nc bnc" id="L50" title="All 2 branches missed.">                        grantedAuth -&gt; !grantedAuth.getAuthority().equals(&quot;ROLE_ADMIN&quot;)</span>
-<span class="nc bnc" id="L51" title="All 2 branches missed.">                                &amp;&amp; !grantedAuth.getAuthority().equals(&quot;ROLE_MODERATOR&quot;))</span>
-<span class="nc" id="L52">                        .collect(Collectors.toSet());</span>
-<span class="nc bnc" id="L53" title="All 2 branches missed.">                if (user.getAdmin()) {</span>
-<span class="nc" id="L54">                    revisedAuthorities.add(new SimpleGrantedAuthority(&quot;ROLE_ADMIN&quot;));</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (authentication.getClass() == OAuth2AuthenticationToken.class) {</span>
+<span class="fc" id="L43">            OAuth2User principal = ((OAuth2AuthenticationToken) authentication).getPrincipal();</span>
+<span class="fc" id="L44">            String email = principal.getAttribute(&quot;email&quot;);</span>
+<span class="fc" id="L45">            Optional&lt;User&gt; optionalUser = userRepository.findByEmail(email);</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (optionalUser.isPresent()) {</span>
+<span class="fc" id="L47">                User user = optionalUser.get();</span>
+<span class="fc" id="L48">                Collection&lt;? extends GrantedAuthority&gt; authorities = authentication.getAuthorities();</span>
+<span class="fc" id="L49">                Set&lt;GrantedAuthority&gt; revisedAuthorities = authorities.stream().filter(</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">                        grantedAuth -&gt; !grantedAuth.getAuthority().equals(&quot;ROLE_ADMIN&quot;)</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">                                &amp;&amp; !grantedAuth.getAuthority().equals(&quot;ROLE_MODERATOR&quot;))</span>
+<span class="fc" id="L52">                        .collect(Collectors.toSet());</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">                if (user.getAdmin()) {</span>
+<span class="fc" id="L54">                    revisedAuthorities.add(new SimpleGrantedAuthority(&quot;ROLE_ADMIN&quot;));</span>
                 }
-<span class="nc bnc" id="L56" title="All 2 branches missed.">                if (user.getModerator()) {</span>
-<span class="nc" id="L57">                    revisedAuthorities.add(new SimpleGrantedAuthority(&quot;ROLE_MODERATOR&quot;));</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">                if (user.getModerator()) {</span>
+<span class="fc" id="L57">                    revisedAuthorities.add(new SimpleGrantedAuthority(&quot;ROLE_MODERATOR&quot;));</span>
                 }
-<span class="nc" id="L59">                Authentication newAuth = new OAuth2AuthenticationToken(principal, revisedAuthorities,</span>
-<span class="nc" id="L60">                        (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId()));</span>
-<span class="nc" id="L61">                SecurityContextHolder.getContext().setAuthentication(newAuth);</span>
+<span class="fc" id="L59">                Authentication newAuth = new OAuth2AuthenticationToken(principal, revisedAuthorities,</span>
+<span class="fc" id="L60">                        (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId()));</span>
+<span class="fc" id="L61">                SecurityContextHolder.getContext().setAuthentication(newAuth);</span>
             }
         }
 <span class="fc" id="L64">        return true;</span>
