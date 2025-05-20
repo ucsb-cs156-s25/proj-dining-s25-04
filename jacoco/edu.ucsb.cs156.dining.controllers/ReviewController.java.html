@@ -213,5 +213,24 @@ import jakarta.validation.Valid;
 <span class="fc" id="L213">        Iterable&lt;Review&gt; reviewsList = reviewRepository.findByStatus(ModerationStatus.AWAITING_REVIEW);</span>
 <span class="fc" id="L214">        return reviewsList;</span>
     }
+
+
+    @Operation(summary = &quot;Get a review by id&quot;)
+    @PreAuthorize(&quot;hasRole('ROLE_USER')&quot;)
+    @GetMapping(&quot;/get&quot;)
+    public Review getReviewById(@Parameter Long id) {
+<span class="fc" id="L222">        Review review = reviewRepository.findById(id).orElseThrow(</span>
+<span class="fc" id="L223">                () -&gt; new EntityNotFoundException(Review.class, id)</span>
+        );
+<span class="fc" id="L225">        User current = getCurrentUser().getUser();</span>
+        // Note: Once moderator is implmented, we can change this, and add another check for if user is a moderator
+        // and if the review is moderated
+<span class="fc bfc" id="L228" title="All 4 branches covered.">        if (current.getId() != review.getReviewer().getId() &amp;&amp; !current.getAdmin()) {</span>
+<span class="fc" id="L229">            throw new AccessDeniedException(&quot;Only the user who made this review or an admin can get id&quot;);</span>
+        }
+
+
+<span class="fc" id="L233">        return review;</span>
+    }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

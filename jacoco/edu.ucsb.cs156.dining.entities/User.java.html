@@ -44,18 +44,16 @@ public class User {
  private ModerationStatus status;
  private LocalDate dateApproved;
 
- private boolean moderator;
-
  @ToString.Exclude
  @OneToMany(mappedBy=&quot;reviewer&quot;)
  @Fetch(FetchMode.JOIN)
  private List&lt;Review&gt; reviews;
  
  public String getAlias() {
-<span class="fc bfc" id="L55" title="All 2 branches covered.">        if (this.alias == null) {</span>
-<span class="fc" id="L56">            this.alias = &quot;Anonymous User&quot;; </span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (this.alias == null) {</span>
+<span class="fc" id="L54">            this.alias = &quot;Anonymous User&quot;; </span>
         }
-<span class="fc" id="L58">        return this.alias;</span>
+<span class="fc" id="L56">        return this.alias;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
