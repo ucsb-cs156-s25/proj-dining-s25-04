@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/7</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/7</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -93,13 +93,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -107,23 +105,25 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import OurTable, { ButtonColumn } from "../OurTable";
 import { hasRole } from "../../utils/currentUser";
 &nbsp;
-export default function <span class="fstat-no" title="function not covered" >MenuItemTable(</span>{ menuItems, currentUser }) {
-  const testid = <span class="cstat-no" title="statement not covered" >"MenuItemTable";</span>
-  const reviewCallback = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (_cell) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    alert("Reviews coming soon!");</span>
+export default function MenuItemTable({ menuItems, currentUser }) {
+  const testid = "MenuItemTable";
+  const reviewCallback = async (_cell) =&gt; {
+    alert("Reviews coming soon!");
   };
-  const columns = <span class="cstat-no" title="statement not covered" >[</span>
+  const columns = [
     {
       Header: "Item Name",
       accessor: "name",
@@ -133,13 +133,13 @@ export default function <span class="fstat-no" title="function not covered" >Men
       accessor: "station",
     },
   ];
-<span class="cstat-no" title="statement not covered" >  if (hasRole(currentUser, "ROLE_USER")) {</span>
-<span class="cstat-no" title="statement not covered" >    columns.push(</span>
+  if (hasRole(currentUser, "ROLE_USER")) {
+    columns.push(
       ButtonColumn("Review Item", "warning", reviewCallback, testid),
     );
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return &lt;OurTable columns={columns} data={menuItems} testid={testid} /&gt;;</span>
+  return &lt;OurTable columns={columns} data={menuItems} testid={testid} /&gt;;
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -148,7 +148,7 @@ export default function <span class="fstat-no" title="function not covered" >Men
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-21T01:24:22.651Z
+                at 2025-05-21T01:52:45.761Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
