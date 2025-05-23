@@ -5,15 +5,47 @@ import BasicLayout from "main/layouts/BasicLayout/BasicLayout";
 import { _Table, _Button } from "react-bootstrap";
 import AliasTable from "../components/Alias/AliasTable";
 import { useBackend } from "../utils/useBackend";
+import ReviewTable from "../components/Reviews/ReviewTable";
+import { useBackendMutation } from "../utils/useBackend";
+import { toast } from "react-toastify";
 
 const Moderate = () => {
   const { data: currentUser } = useCurrentUser();
-  const { data } = useBackend(
-    // don't test internal caching of React Query
-    [`/api/admin/usersWithProposedAlias`],
-    //  don't test internal caching of React Query
+
+  const { data: aliasData } = useBackend(
+    ["/api/admin/usersWithProposedAlias"],
     { method: "GET", url: "/api/admin/usersWithProposedAlias" },
     [],
+  );
+
+  const { data: reviewData } = useBackend(
+    ["/api/reviews/all"],
+    { method: "GET", url: "/api/reviews/all" },
+    [],
+  );
+
+  const approveReviewMutation = useBackendMutation(
+    (review) => ({
+      url: "/api/reviews/update",
+      method: "PUT",
+      params: { ...review, status: "APPROVED" },
+    }),
+    {
+      onSuccess: () => toast("Review approved!"),
+      onError: (err) => toast.error(`Error: ${err.message}`),
+    },
+  );
+
+  const rejectReviewMutation = useBackendMutation(
+    (review) => ({
+      url: "/api/reviews/update",
+      method: "PUT",
+      params: { ...review, status: "REJECTED" },
+    }),
+    {
+      onSuccess: () => toast("Review rejected!"),
+      onError: (err) => toast.error(`Error: ${err.message}`),
+    },
   );
 
   if (!currentUser.loggedIn || !hasRole(currentUser, "ROLE_ADMIN")) {
@@ -24,7 +56,17 @@ const Moderate = () => {
     <BasicLayout>
       <div className="pt-2">
         <h2>Moderation Page</h2>
-        <AliasTable alias={data} />
+
+        <h3>Alias Proposals</h3>
+        <AliasTable alias={aliasData} />
+
+        <h3 className="mt-4">Review Submissions</h3>
+        <ReviewTable
+          data={reviewData}
+          moderatorOptions={true}
+          onApprove={approveReviewMutation.mutate}
+          onReject={rejectReviewMutation.mutate}
+        />
       </div>
     </BasicLayout>
   );
