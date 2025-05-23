@@ -75,26 +75,33 @@ describe("ModeratePage tests", () => {
       return { data: [], isLoading: false };
     });
 
-    useBackendMutation.mockImplementation(
-      (axiosParamsFn, { onSuccess, _onError }) => {
-        if (axiosParamsFn.toString().includes("approved: true")) {
-          return {
-            mutate: () => onSuccess({ id: 1 }, { proposedAlias: "Ali1" }),
-          };
-        } else if (axiosParamsFn.toString().includes("approved: false")) {
-          return {
-            mutate: () => onSuccess({ id: 1 }, { proposedAlias: "Ali1" }),
-          };
-        } else {
-          return {
-            mutate: () => onSuccess({}),
-          };
-        }
-      },
-    );
+    useBackendMutation.mockImplementation((axiosParamsFn, { onSuccess }) => {
+      if (axiosParamsFn.toString().includes("approved: true")) {
+        return {
+          mutate: () => onSuccess({ id: 1, proposedAlias: "Ali1" }),
+        };
+      } else if (axiosParamsFn.toString().includes("approved: false")) {
+        return {
+          mutate: () => onSuccess({ id: 1, proposedAlias: "Ali1" }),
+        };
+      } else {
+        return {
+          mutate: () => onSuccess({}),
+        };
+      }
+    });
   });
 
   test("shows success toast when approving alias succeeds", async () => {
+    useBackendMutation.mockImplementation((axiosParamsFn, { onSuccess }) => {
+      return {
+        mutate: () =>
+          onSuccess(
+            { id: 1 }, // user
+            { proposedAlias: "Ali1" }, // proposedAlias
+          ),
+      };
+    });
     renderPage();
     const cell = await screen.findByTestId("AliasTable-cell-row-0-col-approve");
     const button = within(cell).getByRole("button", { name: "Approve" });
@@ -108,7 +115,18 @@ describe("ModeratePage tests", () => {
   });
 
   test("shows success toast when rejecting alias succeeds", async () => {
+    useBackendMutation.mockImplementation((axiosParamsFn, { onSuccess }) => {
+      return {
+        mutate: () =>
+          onSuccess(
+            { id: 1 }, // user
+            { proposedAlias: "Ali1" }, // proposedAlias
+          ),
+      };
+    });
+
     renderPage();
+
     const cell = await screen.findByTestId("AliasTable-cell-row-0-col-reject");
     const button = within(cell).getByRole("button", { name: "Reject" });
     fireEvent.click(button);
