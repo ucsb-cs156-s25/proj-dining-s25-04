@@ -13,7 +13,9 @@ export default function AliasTable({ alias }) {
   });
   const approveMutation = useBackendMutation(objectToAxiosParamsApprove, {
     onSuccess: (user, propAlias) => {
-      toast(`Alias ${propAlias.proposedAlias} for id ${user.id} approved!`);
+      toast.success(
+        `Alias ${propAlias.proposedAlias} for id ${user.id} approved!`,
+      );
     },
     onError: (err) => {
       toast.error(`Error approving alias: ${err.message}`);
@@ -28,7 +30,9 @@ export default function AliasTable({ alias }) {
   });
   const rejectMutation = useBackendMutation(objectToAxiosParamsReject, {
     onSuccess: (user, propAlias) => {
-      toast(`Alias ${propAlias.proposedAlias} for id ${user.id} rejected!`);
+      toast.success(
+        `Alias ${propAlias.proposedAlias} for id ${user.id} rejected!`,
+      );
     },
     onError: (err) => {
       toast.error(`Error rejecting alias: ${err.message}`);
