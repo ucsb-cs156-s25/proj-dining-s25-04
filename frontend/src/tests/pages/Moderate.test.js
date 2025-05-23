@@ -76,7 +76,7 @@ describe("ModeratePage tests", () => {
     });
 
     useBackendMutation.mockImplementation(
-      (axiosParamsFn, { onSuccess, onError }) => {
+      (axiosParamsFn, { onSuccess, _onError }) => {
         if (axiosParamsFn.toString().includes("approved: true")) {
           return {
             mutate: () => onSuccess({ id: 1 }, { proposedAlias: "Ali1" }),
