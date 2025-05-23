@@ -46,7 +46,7 @@ export default function Moderate() {
     },
   );
 
-  if (!currentUser?.loggedIn || !hasRole(currentUser, "ROLE_ADMIN")) {
+  if (!currentUser.loggedIn || !hasRole(currentUser, "ROLE_ADMIN")) {
     return <Navigate to="/" />;
   }
 
