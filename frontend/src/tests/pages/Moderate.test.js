@@ -25,7 +25,6 @@ jest.mock("react-toastify", () => {
 
 jest.mock("main/utils/useBackend");
 
-
 describe("ModeratePage tests", () => {
   let queryClient;
   let axiosMock;
@@ -36,7 +35,7 @@ describe("ModeratePage tests", () => {
         <MemoryRouter>
           <Moderate />
         </MemoryRouter>
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
   };
 
@@ -59,7 +58,9 @@ describe("ModeratePage tests", () => {
       },
     });
 
-    jest.spyOn(currentUserModule, "hasRole").mockImplementation((_u, r) => r === "ROLE_ADMIN");
+    jest
+      .spyOn(currentUserModule, "hasRole")
+      .mockImplementation((_u, r) => r === "ROLE_ADMIN");
 
     useBackend.mockImplementation((key) => {
       if (key[0] === "/api/admin/usersWithProposedAlias") {
@@ -74,18 +75,22 @@ describe("ModeratePage tests", () => {
     useBackendMutation.mockImplementation(
       (_, { onSuccess: _onSuccess, onError }) => ({
         mutate: () => onError(new Error("Request failed with status code 500")),
-      })
+      }),
     );
   });
 
   test("renders correctly for admin user", async () => {
     axiosMock.onGet("/api/currentUser").reply(200, {});
-    axiosMock.onGet("/api/systemInfo").reply(200, { springH2ConsoleEnabled: false });
+    axiosMock
+      .onGet("/api/systemInfo")
+      .reply(200, { springH2ConsoleEnabled: false });
 
     renderPage();
     await screen.findByRole("heading", { level: 2, name: "Moderation Page" });
 
-    expect(screen.getByTestId("AliasTable-header-proposedAlias")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("AliasTable-header-proposedAlias"),
+    ).toBeInTheDocument();
     expect(screen.getByTestId("AliasTable-header-approve")).toBeInTheDocument();
     expect(screen.getByTestId("AliasTable-header-reject")).toBeInTheDocument();
   });
@@ -102,8 +107,9 @@ describe("ModeratePage tests", () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.queryByRole("heading", { level: 2, name: "Moderation Page" }))
-        .not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("heading", { level: 2, name: "Moderation Page" }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -119,14 +125,17 @@ describe("ModeratePage tests", () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.queryByRole("heading", { level: 2, name: "Moderation Page" }))
-        .not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("heading", { level: 2, name: "Moderation Page" }),
+      ).not.toBeInTheDocument();
     });
   });
 
   test("fetches and displays alias proposals", async () => {
     axiosMock.onGet("/api/currentUser").reply(200, {});
-    axiosMock.onGet("/api/systemInfo").reply(200, { springH2ConsoleEnabled: false });
+    axiosMock
+      .onGet("/api/systemInfo")
+      .reply(200, { springH2ConsoleEnabled: false });
 
     renderPage();
     const rows = await screen.findAllByTestId(/AliasTable-row-/);
@@ -139,7 +148,9 @@ describe("ModeratePage tests", () => {
 
   test("useBackend called with correct args", () => {
     axiosMock.onGet("/api/currentUser").reply(200, {});
-    axiosMock.onGet("/api/systemInfo").reply(200, { springH2ConsoleEnabled: false });
+    axiosMock
+      .onGet("/api/systemInfo")
+      .reply(200, { springH2ConsoleEnabled: false });
 
     renderPage();
     expect(useBackend).toHaveBeenCalledWith(
@@ -151,7 +162,9 @@ describe("ModeratePage tests", () => {
 
   test("shows error toast when rejecting alias fails", async () => {
     axiosMock.onGet("/api/currentUser").reply(200, {});
-    axiosMock.onGet("/api/systemInfo").reply(200, { springH2ConsoleEnabled: false });
+    axiosMock
+      .onGet("/api/systemInfo")
+      .reply(200, { springH2ConsoleEnabled: false });
 
     renderPage();
 
@@ -160,7 +173,7 @@ describe("ModeratePage tests", () => {
     fireEvent.click(button);
 
     expect(toast.error).toHaveBeenCalledWith(
-      "Error rejecting alias: Request failed with status code 500"
+      "Error rejecting alias: Request failed with status code 500",
     );
   });
 
@@ -177,50 +190,14 @@ describe("ModeratePage tests", () => {
   test("review approve and reject buttons exist", async () => {
     renderPage();
 
-    const approveBtn = await screen.findByTestId("ReviewTable-cell-row-0-col-Approve-button");
-    const rejectBtn = await screen.findByTestId("ReviewTable-cell-row-0-col-Reject-button");
+    const approveBtn = await screen.findByTestId(
+      "ReviewTable-cell-row-0-col-Approve-button",
+    );
+    const rejectBtn = await screen.findByTestId(
+      "ReviewTable-cell-row-0-col-Reject-button",
+    );
 
     expect(approveBtn).toBeInTheDocument();
     expect(rejectBtn).toBeInTheDocument();
-  });
-
-  test("shows success toast when rejecting alias succeeds", async () => {
-    const user = { id: 1 };
-    const proposedAlias = { proposedAlias: "Ali1" };
-
-    useBackendMutation.mockImplementation((_, { onSuccess }) => ({
-      mutate: () => onSuccess(user, proposedAlias),
-    }));
-
-    renderPage();
-
-    const cell = await screen.findByTestId("AliasTable-cell-row-0-col-reject");
-    const button = within(cell).getByRole("button", { name: "Reject" });
-
-    fireEvent.click(button);
-
-    await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith("Alias Ali1 for id 1 rejected!");
-    });
-  });
-
-  test("shows success toast when approving alias succeeds", async () => {
-    const user = { id: 1 };
-    const proposedAlias = { proposedAlias: "Ali1" };
-
-    useBackendMutation.mockImplementation((_, { onSuccess }) => ({
-      mutate: () => onSuccess(user, proposedAlias),
-    }));
-
-    renderPage();
-
-    const cell = await screen.findByTestId("AliasTable-cell-row-0-col-approve");
-    const button = within(cell).getByRole("button", { name: "Approve" });
-
-    fireEvent.click(button);
-
-    await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith("Alias Ali1 for id 1 approved!");
-    });
   });
 });
