@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.util.List;
 
 import jakarta.validation.Valid;
@@ -30,8 +32,8 @@ import jakarta.validation.Valid;
 @Tag(name = &quot;UCSBDiningMenuItems&quot;)
 @RestController
 @RequestMapping(&quot;/api/diningcommons&quot;)
-<span class="fc" id="L33">@Slf4j</span>
-<span class="fc" id="L34">public class UCSBDiningMenuItemsController extends ApiController {</span>
+<span class="fc" id="L35">@Slf4j</span>
+<span class="fc" id="L36">public class UCSBDiningMenuItemsController extends ApiController {</span>
 
   @Autowired UCSBDiningMenuItemsService ucsbDiningMenuItemsService;
   
@@ -48,25 +50,41 @@ import jakarta.validation.Valid;
   )
     throws Exception {
 
-<span class="fc" id="L51">    List&lt;Entree&gt; body = ucsbDiningMenuItemsService.get(datetime, diningcommoncode, mealcode);</span>
+<span class="fc" id="L53">    List&lt;Entree&gt; body = ucsbDiningMenuItemsService.get(datetime, diningcommoncode, mealcode);</span>
 
-<span class="fc" id="L53">    List&lt;MenuItem&gt; menuitems = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L55">    List&lt;MenuItem&gt; menuitems = new ArrayList&lt;&gt;();</span>
 
-<span class="fc bfc" id="L55" title="All 2 branches covered.">    for (Entree entree : body) {</span>
-<span class="fc" id="L56">        Optional&lt;MenuItem&gt; exists = menuItemRepository.findByDiningCommonsCodeAndMealCodeAndNameAndStation(diningcommoncode, mealcode, entree.getName(), entree.getStation());</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">    for (Entree entree : body) {</span>
+<span class="fc" id="L58">        Optional&lt;MenuItem&gt; exists = menuItemRepository.findByDiningCommonsCodeAndMealCodeAndNameAndStation(diningcommoncode, mealcode, entree.getName(), entree.getStation());</span>
 
-<span class="fc" id="L58">        MenuItem newMenuItem = exists.orElse(new MenuItem());</span>
+<span class="fc" id="L60">        MenuItem newMenuItem = exists.orElse(new MenuItem());</span>
           // MenuItem newMenuItem = new MenuItem();
-<span class="fc" id="L60">          newMenuItem.setDiningCommonsCode(diningcommoncode);</span>
-<span class="fc" id="L61">          newMenuItem.setMealCode(mealcode);</span>
-<span class="fc" id="L62">          newMenuItem.setName(entree.getName());</span>
-<span class="fc" id="L63">          newMenuItem.setStation(entree.getStation());</span>
+<span class="fc" id="L62">          newMenuItem.setDiningCommonsCode(diningcommoncode);</span>
+<span class="fc" id="L63">          newMenuItem.setMealCode(mealcode);</span>
+<span class="fc" id="L64">          newMenuItem.setName(entree.getName());</span>
+<span class="fc" id="L65">          newMenuItem.setStation(entree.getStation());</span>
 
-<span class="fc" id="L65">          menuItemRepository.save(newMenuItem);</span>
-<span class="fc" id="L66">          menuitems.add(newMenuItem);</span>
-<span class="fc" id="L67">    }</span>
+<span class="fc" id="L67">          menuItemRepository.save(newMenuItem);</span>
+<span class="fc" id="L68">          menuitems.add(newMenuItem);</span>
+<span class="fc" id="L69">    }</span>
 
-<span class="fc" id="L69">    return ResponseEntity.ok().body(menuitems);</span>
+<span class="fc" id="L71">    return ResponseEntity.ok().body(menuitems);</span>
   }
+
+
+  @Operation(summary = &quot;Get a single menu item by id&quot;)
+  @GetMapping(value = &quot;/menuitem&quot;, produces = &quot;application/json&quot;)
+  public ResponseEntity&lt;MenuItem&gt; get_menu_item(
+      @Parameter(description= &quot;id of the menu item&quot;) 
+      @RequestParam Long id
+  )
+    throws Exception {
+
+<span class="fc" id="L83">      MenuItem menuItem = menuItemRepository.findById(id)</span>
+<span class="fc" id="L84">          .orElseThrow(() -&gt; new EntityNotFoundException(MenuItem.class, id));</span>
+
+<span class="fc" id="L86">      return ResponseEntity.ok().body(menuItem);</span>
+      
+    }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
