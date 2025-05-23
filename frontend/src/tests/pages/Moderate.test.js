@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  within,
+  waitFor,
+} from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { MemoryRouter } from "react-router-dom";
 import axios from "axios";
@@ -35,7 +41,6 @@ describe("ModeratePage persistence tests", () => {
     axiosMock.reset();
     axiosMock.resetHistory();
 
-    // Default: both list APIs return fixtures, all mutations trigger onError
     useBackend.mockImplementation((key) => {
       if (key[0] === "/api/admin/usersWithProposedAlias") {
         return { data: aliasFixtures.threeAlias, isLoading: false };
@@ -45,6 +50,7 @@ describe("ModeratePage persistence tests", () => {
       }
       return { data: [], isLoading: false };
     });
+
     useBackendMutation.mockImplementation((_, { onError }) => ({
       mutate: () => onError(new Error("Request failed with status code 500")),
     }));
@@ -54,13 +60,52 @@ describe("ModeratePage persistence tests", () => {
     axiosMock.onGet("/api/currentUser").reply(200, {
       user: { id: 1, email: "admin@ucsb.edu", admin: true },
       roles: [{ authority: "ROLE_ADMIN" }],
+      loggedIn: true,
     });
     axiosMock.onGet("/api/systemInfo").reply(200, {
       springH2ConsoleEnabled: false,
     });
   };
 
-  test("renders Alias & Review table headers", async () => {
+  const setupNonAdmin = () => {
+    axiosMock.onGet("/api/currentUser").reply(200, {
+      user: { id: 2, email: "user@ucsb.edu", admin: false },
+      roles: [{ authority: "ROLE_USER" }],
+      loggedIn: true,
+    });
+    axiosMock.onGet("/api/systemInfo").reply(200, {
+      springH2ConsoleEnabled: false,
+    });
+  };
+
+  const setupNotLoggedIn = () => {
+    axiosMock.onGet("/api/currentUser").reply(200, { loggedIn: false });
+    axiosMock.onGet("/api/systemInfo").reply(200, {
+      springH2ConsoleEnabled: false,
+    });
+  };
+
+  test("redirects non-admin user to homepage", async () => {
+    setupNonAdmin();
+    renderPage();
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("heading", { level: 2, name: "Moderation Page" }),
+      ).toBeNull();
+    });
+  });
+
+  test("redirects unauthenticated user to homepage", async () => {
+    setupNotLoggedIn();
+    renderPage();
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("heading", { level: 2, name: "Moderation Page" }),
+      ).toBeNull();
+    });
+  });
+
+  test("renders Alias & Review table headers for admin", async () => {
     setupAdmin();
     renderPage();
 
@@ -113,8 +158,6 @@ describe("ModeratePage persistence tests", () => {
     );
   });
 
-  // -----------------------------
-  // Alias onError
   test("shows toast.error when alias reject fails", async () => {
     setupAdmin();
     renderPage();
@@ -125,10 +168,8 @@ describe("ModeratePage persistence tests", () => {
     );
   });
 
-  // Alias onSuccess
   test("shows toast when alias approve succeeds", async () => {
     setupAdmin();
-    // Wrap propAlias string into { proposedAlias: ... }
     useBackendMutation.mockImplementation((_, { onSuccess }) => ({
       mutate: (user, propAliasString) =>
         onSuccess(user, { proposedAlias: propAliasString }),
@@ -144,8 +185,6 @@ describe("ModeratePage persistence tests", () => {
     );
   });
 
-  // -----------------------------
-  // Review onError: Reject
   test("shows toast.error when review reject fails", async () => {
     setupAdmin();
     renderPage();
@@ -156,7 +195,6 @@ describe("ModeratePage persistence tests", () => {
     );
   });
 
-  // Review onError: Approve
   test("shows toast.error when review approve fails", async () => {
     setupAdmin();
     renderPage();
@@ -169,7 +207,6 @@ describe("ModeratePage persistence tests", () => {
     );
   });
 
-  // Review onSuccess: Approve
   test("shows toast when review approve succeeds", async () => {
     setupAdmin();
     useBackendMutation.mockImplementation((_, { onSuccess }) => ({
@@ -186,7 +223,6 @@ describe("ModeratePage persistence tests", () => {
     );
   });
 
-  // Review onSuccess: Reject
   test("shows toast when review reject succeeds", async () => {
     setupAdmin();
     useBackendMutation.mockImplementation((_, { onSuccess }) => ({
@@ -199,5 +235,29 @@ describe("ModeratePage persistence tests", () => {
     expect(require("react-toastify").toast).toHaveBeenCalledWith(
       "Review rejected!",
     );
+  });
+
+  test("configures review mutation mapping correctly", () => {
+    setupAdmin();
+    renderPage();
+    expect(useBackendMutation).toHaveBeenCalledTimes(4);
+    const sample = { id: 123, foo: "bar" };
+    const mappers = useBackendMutation.mock.calls.map((call) => call[0]);
+    const approveMapper = mappers.find(
+      (fn) => fn(sample).params?.status === "APPROVED",
+    );
+    const rejectMapper = mappers.find(
+      (fn) => fn(sample).params?.status === "REJECTED",
+    );
+    expect(approveMapper(sample)).toEqual({
+      url: "/api/reviews/update",
+      method: "PUT",
+      params: { ...sample, status: "APPROVED" },
+    });
+    expect(rejectMapper(sample)).toEqual({
+      url: "/api/reviews/update",
+      method: "PUT",
+      params: { ...sample, status: "REJECTED" },
+    });
   });
 });
