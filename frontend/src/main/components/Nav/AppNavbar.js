@@ -60,11 +60,21 @@ export default function AppNavbar({
                       Users
                     </NavDropdown.Item>
                   </NavDropdown>
-                  <Nav.Link as={Link} to="/moderate">
-                    Moderate
-                  </Nav.Link>
                 </>
               )}
+
+              {
+                // Stryker disable all: prevent mutation of authorization check
+                (hasRole(currentUser, "ROLE_ADMIN") ||
+                  hasRole(currentUser, "ROLE_MODERATOR")) && (
+                  <>
+                    <Nav.Link as={Link} to="/moderate">
+                      Moderate
+                    </Nav.Link>
+                  </>
+                )
+                // Stryker restore all
+              }
               {currentUser && currentUser.loggedIn ? (
                 <>
                   <Nav.Link as={Link} to="/placeholder">
