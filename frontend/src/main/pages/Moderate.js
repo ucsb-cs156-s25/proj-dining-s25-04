@@ -1,50 +1,44 @@
-import React from "react";
+import React, { useState } from "react";
 import { useCurrentUser, hasRole } from "main/utils/currentUser";
 import { Navigate } from "react-router-dom";
 import BasicLayout from "main/layouts/BasicLayout/BasicLayout";
 import AliasTable from "main/components/Alias/AliasTable";
 import ReviewTable from "main/components/Reviews/ReviewTable";
-import { useBackend, useBackendMutation } from "main/utils/useBackend";
-import { toast } from "react-toastify";
+import ReviewModerationModal from "main/components/Reviews/ReviewModerationModal";
+import { useBackend } from "main/utils/useBackend";
 
 export default function Moderate() {
   const { data: currentUser } = useCurrentUser();
 
-  const { data: aliasData } = useBackend(
+  //  Alias
+  const aliasResponse = useBackend(
     ["/api/admin/usersWithProposedAlias"],
     { method: "GET", url: "/api/admin/usersWithProposedAlias" },
     [],
   );
+  const aliasData = aliasResponse?.data ?? [];
 
-  const { data: reviewData } = useBackend(
+  //  Review
+  const reviewResponse = useBackend(
     ["/api/reviews/all"],
     { method: "GET", url: "/api/reviews/all" },
     [],
   );
+  const reviewData = reviewResponse?.data ?? [];
 
-  const approveReviewMutation = useBackendMutation(
-    (review) => ({
-      url: "/api/reviews/update",
-      method: "PUT",
-      params: { ...review, status: "APPROVED" },
-    }),
-    {
-      onSuccess: () => toast("Review approved!"),
-      onError: (err) => toast.error(`Error: ${err.message}`),
-    },
-  );
+  const [showModal, setShowModal] = useState(false);
+  const [modalReview, setModalReview] = useState(null);
+  const [modalStatus, setModalStatus] = useState("APPROVED");
 
-  const rejectReviewMutation = useBackendMutation(
-    (review) => ({
-      url: "/api/reviews/update",
-      method: "PUT",
-      params: { ...review, status: "REJECTED" },
-    }),
-    {
-      onSuccess: () => toast("Review rejected!"),
-      onError: (err) => toast.error(`Error: ${err.message}`),
-    },
-  );
+  const openModal = (review, status) => {
+    setModalReview(review);
+    setModalStatus(status);
+    setShowModal(true);
+  };
+  const closeModal = () => {
+    setShowModal(false);
+    setModalReview(null);
+  };
 
   if (!currentUser.loggedIn || !hasRole(currentUser, "ROLE_ADMIN")) {
     return <Navigate to="/" />;
@@ -53,7 +47,7 @@ export default function Moderate() {
   return (
     <BasicLayout>
       <div className="pt-2">
-        <h2>Moderation Page</h2>
+        <h1>Moderation Page</h1>
 
         <h3>Alias Proposals</h3>
         <AliasTable alias={aliasData} />
@@ -62,8 +56,16 @@ export default function Moderate() {
         <ReviewTable
           data={reviewData}
           moderatorOptions={true}
-          onApprove={approveReviewMutation.mutate}
-          onReject={rejectReviewMutation.mutate}
+          onApprove={(review) => openModal(review, "APPROVED")}
+          onReject={(review) => openModal(review, "REJECTED")}
+        />
+
+        {/* Moderation Modal */}
+        <ReviewModerationModal
+          show={showModal}
+          review={modalReview}
+          status={modalStatus}
+          onClose={closeModal}
         />
       </div>
     </BasicLayout>
