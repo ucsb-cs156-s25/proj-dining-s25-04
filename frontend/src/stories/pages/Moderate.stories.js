@@ -17,7 +17,7 @@ LoggedOut.parameters = {
   msw: {
     handlers: [
       http.get("/api/currentUser", () =>
-        HttpResponse.json(null, { status: 403 })
+        HttpResponse.json(null, { status: 403 }),
       ),
     ],
   },
@@ -28,7 +28,7 @@ NoAdminRole.parameters = {
   msw: {
     handlers: [
       http.get("/api/currentUser", () =>
-        HttpResponse.json(apiCurrentUserFixtures.userOnly)
+        HttpResponse.json(apiCurrentUserFixtures.userOnly),
       ),
     ],
   },
@@ -39,15 +39,13 @@ AdminView.parameters = {
   msw: {
     handlers: [
       http.get("/api/currentUser", () =>
-        HttpResponse.json(apiCurrentUserFixtures.adminUser)
+        HttpResponse.json(apiCurrentUserFixtures.adminUser),
       ),
-      http.get(
-        "/api/admin/usersWithProposedAlias",
-        () => HttpResponse.json(aliasFixtures.threeAlias)
+      http.get("/api/admin/usersWithProposedAlias", () =>
+        HttpResponse.json(aliasFixtures.threeAlias),
       ),
-      http.get(
-        "/api/reviews/all",
-        () => HttpResponse.json(ReviewFixtures.threeReviews)
+      http.get("/api/reviews/all", () =>
+        HttpResponse.json(ReviewFixtures.threeReviews),
       ),
     ],
   },
