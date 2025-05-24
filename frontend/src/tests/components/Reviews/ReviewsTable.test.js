@@ -9,7 +9,7 @@ describe("ReviewTable Tests", () => {
     render(
       <ReviewTable data={data} userOptions={false} moderatorOptions={false} />,
     );
-    expect(screen.getByTestId("ReviewTable-header-itemId")).toHaveTextContent(
+    expect(screen.getByTestId("ReviewTable-header-Item ID")).toHaveTextContent(
       "Item ID",
     );
     expect(
@@ -144,5 +144,22 @@ describe("ReviewTable Tests", () => {
     expect(
       screen.queryByTestId("ReviewTable-cell-row-0-col-Reject-button"),
     ).not.toBeInTheDocument();
+  });
+
+  test("renders empty Item ID when both itemId and item are missing", () => {
+    const data = [
+      {
+        id: 999,
+        reviewerComments: "No item id",
+        itemsStars: 1,
+        dateItemServed: "2022-01-01T00:00:00",
+      },
+    ];
+    render(
+      <ReviewTable data={data} userOptions={false} moderatorOptions={false} />,
+    );
+    expect(
+      screen.getByTestId("ReviewTable-cell-row-0-col-Item ID"),
+    ).toHaveTextContent(/^\s*$/); // empty or whitespace only
   });
 });

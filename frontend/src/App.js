@@ -9,6 +9,7 @@ import PlaceholderEditPage from "main/pages/Placeholder/PlaceholderEditPage";
 
 import MyReviewsIndexPage from "main/pages/MyReviews/MyReviewsIndexPage";
 import ReviewsCreatePage from "main/pages/Reviews/ReviewsCreatePage";
+import ReviewEditPage from "main/pages/MyReviews/ReviewEditPage";
 
 import MealTimesPage from "main/pages/Meal/MealTimesPage";
 
@@ -19,6 +20,7 @@ import { hasRole, useCurrentUser } from "main/utils/currentUser";
 import "bootstrap/dist/css/bootstrap.css";
 import "react-toastify/dist/ReactToastify.css";
 import MenuItemPage from "main/pages/MenuItem/MenuItemPage";
+import ReviewsForMenuItemPage from "main/pages/Reviews/ReviewsForMenuItemPage";
 
 function App() {
   const { data: currentUser } = useCurrentUser();
@@ -34,6 +36,11 @@ function App() {
         {hasRole(currentUser, "ROLE_USER") && (
           <>
             <Route exact path="/myreviews" element={<MyReviewsIndexPage />} />
+            <Route
+              exact
+              path="/myreviews/edit/:id"
+              element={<ReviewEditPage />}
+            />
             <Route
               exact
               path="/reviews/post/:id"
@@ -81,6 +88,11 @@ function App() {
             element={<MenuItemPage />}
           />
         </>
+        <Route
+          exact
+          path="/reviews/:itemid"
+          element={<ReviewsForMenuItemPage />}
+        />
       </Routes>
     </BrowserRouter>
   );
