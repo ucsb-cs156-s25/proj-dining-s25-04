@@ -1,123 +1,102 @@
 import React from "react";
-import {
-  render,
-  screen,
-  fireEvent,
-  within,
-  waitFor,
-} from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { MemoryRouter } from "react-router-dom";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import ReviewModerationModal from "main/components/Reviews/ReviewModerationModal";
 
-import Moderate from "main/pages/Moderate";
-import aliasFixtures from "fixtures/aliasFixtures";
-import { ReviewFixtures } from "fixtures/reviewFixtures";
+// mock useBackendMutation
+jest.mock("main/utils/useBackend", () => ({ useBackendMutation: jest.fn() }));
+import { useBackendMutation } from "main/utils/useBackend";
 
-// 1) mock backend hooks
-jest.mock("main/utils/useBackend");
-import { useBackend, useBackendMutation } from "main/utils/useBackend";
-
-// 2) mock toast
+// mock toast
 jest.mock("react-toastify", () => {
-  const t = jest.fn();
-  t.error = jest.fn();
-  return { toast: t };
+  const toast = jest.fn();
+  toast.error = jest.fn();
+  return { toast };
 });
 
-describe("Moderate Page – Review moderation flow", () => {
-  const queryClient = new QueryClient();
+const fakeReview = {
+  id: 42,
+  itemsStars: 4,
+  reviewerComments: "Great place!",
+};
+
+describe("ReviewModerationModal", () => {
+  let mutateMock;
+  let onCloseMock;
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // aliasData then reviewData
-    useBackend
-      .mockReturnValueOnce({ data: aliasFixtures.oneAlias, isLoading: false })
-      .mockReturnValueOnce({
-        data: ReviewFixtures.threeReviews,
-        isLoading: false,
-      });
-
+    mutateMock = jest.fn();
     useBackendMutation.mockReturnValue({
-      mutate: jest.fn(),
+      mutate: mutateMock,
       isLoading: false,
     });
+    onCloseMock = jest.fn();
   });
 
-  function renderPage() {
+  test("renders correctly for APPROVED status and shows review details", () => {
     render(
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <Moderate />
-        </MemoryRouter>
-      </QueryClientProvider>,
+      <ReviewModerationModal
+        show={true}
+        review={fakeReview}
+        status="APPROVED"
+        onClose={onCloseMock}
+      />,
     );
-  }
+    expect(screen.getByText("Approve Review")).toBeInTheDocument();
+    expect(screen.getByText("Score:")).toBeInTheDocument();
+    expect(screen.getByText("4")).toBeInTheDocument();
+    expect(screen.getByText("Comments:")).toBeInTheDocument();
+    expect(screen.getByText("Great place!")).toBeInTheDocument();
+    expect(screen.getByLabelText("Moderator Comments")).toBeRequired();
+    expect(screen.getByRole("button", { name: "Approve" })).toBeInTheDocument();
+  });
 
-  test("clicking Approve opens modal, submits with comments, and calls mutation + toast", async () => {
-    renderPage();
+  test("renders correctly for REJECTED status", () => {
+    render(
+      <ReviewModerationModal
+        show={true}
+        review={fakeReview}
+        status="REJECTED"
+        onClose={onCloseMock}
+      />,
+    );
+    expect(screen.getByText("Reject Review")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reject" })).toBeInTheDocument();
+  });
 
-    // 等待 ReviewTable 渲染
-    await screen.findByTestId("ReviewTable");
-
-    // 点击第一行的 Approve
-    const approveButtons = screen.getAllByRole("button", { name: "Approve" });
-    fireEvent.click(approveButtons[0]);
-
-    // Modal 出现
-    const modal = await screen.findByTestId("ReviewModerationModal");
-    expect(modal).toBeInTheDocument();
-
-    // 填写备注
-    fireEvent.change(within(modal).getByLabelText("Moderator Comments"), {
-      target: { value: "Looks good to me" },
+  test("submits and calls mutate + onClose + toast on success", async () => {
+    render(
+      <ReviewModerationModal
+        show={true}
+        review={fakeReview}
+        status="APPROVED"
+        onClose={onCloseMock}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText("Moderator Comments"), {
+      target: { value: "Looks good" },
     });
+    fireEvent.click(screen.getByTestId("ReviewModerationModal-submit"));
 
-    // 提交
-    fireEvent.click(within(modal).getByTestId("ReviewModerationModal-submit"));
-
-    // mutate 和 toast 调用检查
-    const mutateMock = useBackendMutation().mutate;
-    expect(mutateMock).toHaveBeenCalledWith(
-      ReviewFixtures.threeReviews[0],
-      "Looks good to me",
-    );
+    expect(mutateMock).toHaveBeenCalledWith(fakeReview, "Looks good");
     await waitFor(() => {
       expect(require("react-toastify").toast).toHaveBeenCalledWith(
         "Review approved!",
       );
+      expect(onCloseMock).toHaveBeenCalled();
     });
   });
 
-  // 同理可以写 Reject 的测试...
-  test("clicking Reject opens modal with correct title and calls mutation", async () => {
-    renderPage();
-    await screen.findByTestId("ReviewTable");
-
-    const rejectButtons = screen.getAllByRole("button", { name: "Reject" });
-    fireEvent.click(rejectButtons[1]);
-
-    const modal = await screen.findByTestId("ReviewModerationModal");
-    expect(modal).toBeInTheDocument();
-
-    // 填写备注
-    fireEvent.change(within(modal).getByLabelText("Moderator Comments"), {
-      target: { value: "Not good enough" },
-    });
-
-    // 提交
-    fireEvent.click(within(modal).getByTestId("ReviewModerationModal-submit"));
-
-    // mutate 和 toast 调用检查
-    const mutateMock = useBackendMutation().mutate;
-    expect(mutateMock).toHaveBeenCalledWith(
-      ReviewFixtures.threeReviews[1],
-      "Not good enough",
+  test("calls onClose when Cancel clicked", () => {
+    render(
+      <ReviewModerationModal
+        show={true}
+        review={fakeReview}
+        status="REJECTED"
+        onClose={onCloseMock}
+      />,
     );
-    await waitFor(() => {
-      expect(require("react-toastify").toast).toHaveBeenCalledWith(
-        "Review rejected!",
-      );
-    });
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(onCloseMock).toHaveBeenCalled();
   });
 });
