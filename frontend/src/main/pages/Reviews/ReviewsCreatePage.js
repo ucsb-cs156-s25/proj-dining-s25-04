@@ -1,9 +1,9 @@
 import BasicLayout from "main/layouts/BasicLayout/BasicLayout";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 
 export default function ReviewCreatePage() {
   const { id } = useParams();
-  // Stryker disable all : placeholder for future implementation
+  // Stryker disable all : placeholder for future implementations
   return (
     <BasicLayout>
       <div className="pt-2">
