@@ -2,9 +2,49 @@ import React from "react";
 import { useCurrentUser, hasRole } from "main/utils/currentUser";
 import { Navigate } from "react-router-dom";
 import BasicLayout from "main/layouts/BasicLayout/BasicLayout";
+import AliasTable from "main/components/Alias/AliasTable";
+import ReviewTable from "main/components/Reviews/ReviewTable";
+import { useBackend, useBackendMutation } from "main/utils/useBackend";
+import { toast } from "react-toastify";
 
-const Moderate = () => {
+export default function Moderate() {
   const { data: currentUser } = useCurrentUser();
+
+  const { data: aliasData } = useBackend(
+    ["/api/admin/usersWithProposedAlias"],
+    { method: "GET", url: "/api/admin/usersWithProposedAlias" },
+    [],
+  );
+
+  const { data: reviewData } = useBackend(
+    ["/api/reviews/all"],
+    { method: "GET", url: "/api/reviews/all" },
+    [],
+  );
+
+  const approveReviewMutation = useBackendMutation(
+    (review) => ({
+      url: "/api/reviews/update",
+      method: "PUT",
+      params: { ...review, status: "APPROVED" },
+    }),
+    {
+      onSuccess: () => toast("Review approved!"),
+      onError: (err) => toast.error(`Error: ${err.message}`),
+    },
+  );
+
+  const rejectReviewMutation = useBackendMutation(
+    (review) => ({
+      url: "/api/reviews/update",
+      method: "PUT",
+      params: { ...review, status: "REJECTED" },
+    }),
+    {
+      onSuccess: () => toast("Review rejected!"),
+      onError: (err) => toast.error(`Error: ${err.message}`),
+    },
+  );
 
   if (!currentUser.loggedIn || !hasRole(currentUser, "ROLE_ADMIN")) {
     return <Navigate to="/" />;
@@ -13,11 +53,19 @@ const Moderate = () => {
   return (
     <BasicLayout>
       <div className="pt-2">
-        <h1>Moderation Page</h1>
-        <p>This page is accessible only to admins. (Placeholder)</p>
+        <h2>Moderation Page</h2>
+
+        <h3>Alias Proposals</h3>
+        <AliasTable alias={aliasData} />
+
+        <h3 className="mt-4">Review Submissions</h3>
+        <ReviewTable
+          data={reviewData}
+          moderatorOptions={true}
+          onApprove={approveReviewMutation.mutate}
+          onReject={rejectReviewMutation.mutate}
+        />
       </div>
     </BasicLayout>
   );
-};
-
-export default Moderate;
+}
