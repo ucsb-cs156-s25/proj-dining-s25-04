@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 
 export default function Moderate() {
   const { data: currentUser } = useCurrentUser();
+  const comments = ""; // Placeholder for comments, can be used in future if needed
 
   const { data: aliasData } = useBackend(
     ["/api/admin/usersWithProposedAlias"],
@@ -44,7 +45,7 @@ export default function Moderate() {
       method: "PUT",
       params: {
         id: review.id,
-        status: "APPROVED",
+        status: "REJECTED",
         moderatorComments: comments,
       },
     }),
