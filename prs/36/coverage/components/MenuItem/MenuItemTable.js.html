@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -100,13 +100,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -116,27 +114,29 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import OurTable, { ButtonColumn } from "../OurTable";
 import { hasRole } from "../../utils/currentUser";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 &nbsp;
-export default function <span class="fstat-no" title="function not covered" >MenuItemTable(</span>{ menuItems, currentUser }) {
-  const testid = <span class="cstat-no" title="statement not covered" >"MenuItemTable";</span>
-  const reviewCallback = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (_cell) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    alert("Reviews coming soon!");</span>
+export default function MenuItemTable({ menuItems, currentUser }) {
+  const testid = "MenuItemTable";
+  const reviewCallback = async (_cell) =&gt; {
+    alert("Reviews coming soon!");
   };
-  const columns = <span class="cstat-no" title="statement not covered" >[</span>
+  const columns = [
     {
       Header: "Item Name",
       accessor: "name",
@@ -148,16 +148,16 @@ export default function <span class="fstat-no" title="function not covered" >Men
     {
       Header: "Reviews",
       accessor: "id",
-      Cell: <span class="fstat-no" title="function not covered" >({</span> value }) =&gt; <span class="cstat-no" title="statement not covered" >&lt;Link to={`/reviews/${value}`}&gt;Reviews&lt;/Link&gt;,</span>
+      Cell: ({ value }) =&gt; &lt;Link to={`/reviews/${value}`}&gt;Reviews&lt;/Link&gt;,
     },
   ];
-<span class="cstat-no" title="statement not covered" >  if (hasRole(currentUser, "ROLE_USER")) {</span>
-<span class="cstat-no" title="statement not covered" >    columns.push(</span>
+  if (hasRole(currentUser, "ROLE_USER")) {
+    columns.push(
       ButtonColumn("Review Item", "warning", reviewCallback, testid),
     );
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return &lt;OurTable columns={columns} data={menuItems} testid={testid} /&gt;;</span>
+  return &lt;OurTable columns={columns} data={menuItems} testid={testid} /&gt;;
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -166,7 +166,7 @@ export default function <span class="fstat-no" title="function not covered" >Men
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-26T02:29:02.564Z
+                at 2025-05-26T02:32:14.727Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
