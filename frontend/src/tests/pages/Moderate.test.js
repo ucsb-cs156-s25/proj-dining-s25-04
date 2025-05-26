@@ -1,31 +1,33 @@
+// src/tests/pages/Moderate.test.js
 import React from "react";
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { MemoryRouter } from "react-router-dom";
 import axios from "axios";
 import AxiosMockAdapter from "axios-mock-adapter";
+
 import Moderate from "main/pages/Moderate";
 import aliasFixtures from "fixtures/aliasFixtures";
 import { ReviewFixtures } from "fixtures/reviewFixtures";
-import { useBackend, useBackendMutation } from "main/utils/useBackend";
+import { useBackendMutation } from "main/utils/useBackend";
 import { toast } from "react-toastify";
 
-jest.mock("main/utils/useBackend");
+jest.mock("main/utils/useBackend", () => {
+  const actual = jest.requireActual("main/utils/useBackend");
+  return {
+    ...actual,
+    useBackendMutation: jest.fn(),
+  };
+});
 
 jest.mock("react-toastify", () => {
-  const t = jest.fn(); // toast is now a jest.fn()
-  t.error = jest.fn(); // toast.error remains a mock fn
+  const t = jest.fn();
+  t.error = jest.fn();
   return { toast: t };
 });
 
 describe("ModeratePage tests", () => {
-  const axiosMock = new AxiosMockAdapter(axios);
+  let axiosMock;
   const queryClient = new QueryClient();
   const renderPage = () => {
     render(
@@ -39,9 +41,9 @@ describe("ModeratePage tests", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    axiosMock.reset();
+    axiosMock = new AxiosMockAdapter(axios);
 
-    // Stub currentUser + systemInfo as admin
+    // Stub currentUser & systemInfo
     axiosMock.onGet("/api/currentUser").reply(200, {
       user: { id: 1, email: "admin@ucsb.edu", admin: true },
       roles: [{ authority: "ROLE_ADMIN" }],
@@ -51,18 +53,19 @@ describe("ModeratePage tests", () => {
       springH2ConsoleEnabled: false,
     });
 
-    // 1st useBackend for alias, 2nd for review
-    useBackend.mockImplementation((key) => {
-      if (key[0] === "/api/admin/usersWithProposedAlias") {
-        return { data: aliasFixtures.threeAlias, isLoading: false };
-      }
-      if (key[0] === "/api/reviews/needsmoderation") {
-        return { data: ReviewFixtures.threeReviews, isLoading: false };
-      }
-      return { data: [], isLoading: false };
-    });
+    // Stub the two data endpoints
+    axiosMock
+      .onGet("/api/admin/usersWithProposedAlias")
+      .reply(200, aliasFixtures.threeAlias);
+    axiosMock
+      .onGet("/api/reviews/needsmoderation")
+      .reply(200, ReviewFixtures.threeReviews);
 
-    // By default all mutations call onError(...)
+    // Stub PUT endpoints so that mutate() won't actually hit network
+    axiosMock.onPut("/api/admin/usersWithProposedAlias").reply(200, {});
+    axiosMock.onPut("/api/reviews/moderate").reply(200, {});
+
+    // Default: all mutations call onError(...)
     useBackendMutation.mockImplementation((_, { onError }) => ({
       mutate: () => onError(new Error("Request failed with status code 500")),
     }));
@@ -109,20 +112,6 @@ describe("ModeratePage tests", () => {
     });
   });
 
-  test("useBackend called with correct endpoints", () => {
-    renderPage();
-    expect(useBackend).toHaveBeenCalledWith(
-      ["/api/admin/usersWithProposedAlias"],
-      { method: "GET", url: "/api/admin/usersWithProposedAlias" },
-      [],
-    );
-    expect(useBackend).toHaveBeenCalledWith(
-      ["/api/reviews/needsmoderation"],
-      { method: "GET", url: "/api/reviews/needsmoderation" },
-      [],
-    );
-  });
-
   test("reject alias shows error toast", async () => {
     renderPage();
     const cell = await screen.findByTestId("AliasTable-cell-row-0-col-reject");
@@ -153,10 +142,10 @@ describe("ModeratePage tests", () => {
   });
 
   test("approve review success toast", async () => {
-    //mutation success case
-    useBackendMutation.mockReturnValue({
-      mutate: () => toast("Review approved!"),
-    });
+    // mutation success case
+    useBackendMutation.mockImplementation((_, { onSuccess }) => ({
+      mutate: () => onSuccess(),
+    }));
 
     renderPage();
     const cell = await screen.findByTestId(
@@ -167,9 +156,9 @@ describe("ModeratePage tests", () => {
   });
 
   test("reject review success toast", async () => {
-    useBackendMutation.mockReturnValue({
-      mutate: () => toast("Review rejected!"),
-    });
+    useBackendMutation.mockImplementation((_, { onSuccess }) => ({
+      mutate: () => onSuccess(),
+    }));
 
     renderPage();
     const cell = await screen.findByTestId("ReviewTable-cell-row-0-col-Reject");
