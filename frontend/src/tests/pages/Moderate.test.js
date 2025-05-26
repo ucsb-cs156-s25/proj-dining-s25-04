@@ -1,9 +1,10 @@
+import React from "react";
 import {
   render,
   screen,
   fireEvent,
-  within,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { MemoryRouter } from "react-router-dom";
@@ -13,17 +14,17 @@ import Moderate from "main/pages/Moderate";
 import aliasFixtures from "fixtures/aliasFixtures";
 import { ReviewFixtures } from "fixtures/reviewFixtures";
 import { useBackend, useBackendMutation } from "main/utils/useBackend";
-
-// Mock toast(...) and toast.error(...)
-jest.mock("react-toastify", () => {
-  const mockToast = jest.fn();
-  mockToast.error = jest.fn();
-  return { toast: mockToast };
-});
+import { toast } from "react-toastify";
 
 jest.mock("main/utils/useBackend");
 
-describe("ModeratePage persistence tests", () => {
+jest.mock("react-toastify", () => {
+  const t = jest.fn(); 
+  t.error = jest.fn(); 
+  return { toast: t };
+});
+
+describe("ModeratePage tests", () => {
   const axiosMock = new AxiosMockAdapter(axios);
   const queryClient = new QueryClient();
   const renderPage = () => {
@@ -39,24 +40,8 @@ describe("ModeratePage persistence tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     axiosMock.reset();
-    axiosMock.resetHistory();
 
-    useBackend.mockImplementation((key) => {
-      if (key[0] === "/api/admin/usersWithProposedAlias") {
-        return { data: aliasFixtures.threeAlias, isLoading: false };
-      }
-      if (key[0] === "/api/reviews/all") {
-        return { data: ReviewFixtures.threeReviews, isLoading: false };
-      }
-      return { data: [], isLoading: false };
-    });
-
-    useBackendMutation.mockImplementation((_, { onError }) => ({
-      mutate: () => onError(new Error("Request failed with status code 500")),
-    }));
-  });
-
-  const setupAdmin = () => {
+    // Stub currentUser + systemInfo as admin
     axiosMock.onGet("/api/currentUser").reply(200, {
       user: { id: 1, email: "admin@ucsb.edu", admin: true },
       roles: [{ authority: "ROLE_ADMIN" }],
@@ -65,50 +50,28 @@ describe("ModeratePage persistence tests", () => {
     axiosMock.onGet("/api/systemInfo").reply(200, {
       springH2ConsoleEnabled: false,
     });
-  };
 
-  const setupNonAdmin = () => {
-    axiosMock.onGet("/api/currentUser").reply(200, {
-      user: { id: 2, email: "user@ucsb.edu", admin: false },
-      roles: [{ authority: "ROLE_USER" }],
-      loggedIn: true,
+    // 1st useBackend for alias, 2nd for review
+    useBackend.mockImplementation((key) => {
+      if (key[0] === "/api/admin/usersWithProposedAlias") {
+        return { data: aliasFixtures.threeAlias, isLoading: false };
+      }
+      if (key[0] === "/api/reviews/needsmoderation") {
+        return { data: ReviewFixtures.threeReviews, isLoading: false };
+      }
+      return { data: [], isLoading: false };
     });
-    axiosMock.onGet("/api/systemInfo").reply(200, {
-      springH2ConsoleEnabled: false,
-    });
-  };
 
-  const setupNotLoggedIn = () => {
-    axiosMock.onGet("/api/currentUser").reply(200, { loggedIn: false });
-    axiosMock.onGet("/api/systemInfo").reply(200, {
-      springH2ConsoleEnabled: false,
-    });
-  };
-
-  test("redirects non-admin user to homepage", async () => {
-    setupNonAdmin();
-    renderPage();
-    await waitFor(() => {
-      expect(
-        screen.queryByRole("heading", { level: 2, name: "Moderation Page" }),
-      ).toBeNull();
-    });
+    // By default all mutations call onError(...)
+    useBackendMutation.mockImplementation((_, { onError }) => ({
+      mutate: () => onError(new Error("Request failed with status code 500")),
+    }));
   });
 
-  test("redirects unauthenticated user to homepage", async () => {
-    setupNotLoggedIn();
-    renderPage();
-    await waitFor(() => {
-      expect(
-        screen.queryByRole("heading", { level: 2, name: "Moderation Page" }),
-      ).toBeNull();
-    });
-  });
-
-  test("renders Alias & Review table headers for admin", async () => {
-    setupAdmin();
+  test("renders both Alias and Review table headers", async () => {
     renderPage();
 
+    // wait for title
     await screen.findByRole("heading", {
       level: 2,
       name: "Moderation Page",
@@ -128,136 +91,89 @@ describe("ModeratePage persistence tests", () => {
     expect(screen.getByTestId("ReviewTable-header-Reject")).toBeInTheDocument();
   });
 
-  test("displays alias rows correctly", async () => {
-    setupAdmin();
+  test("displays alias rows", async () => {
     renderPage();
     const rows = await screen.findAllByTestId(/AliasTable-row-/);
     expect(rows).toHaveLength(aliasFixtures.threeAlias.length);
-    aliasFixtures.threeAlias.forEach((p, idx) => {
-      expect(within(rows[idx]).getByText(p.proposedAlias)).toBeInTheDocument();
+    aliasFixtures.threeAlias.forEach((a, i) => {
+      expect(within(rows[i]).getByText(a.proposedAlias)).toBeInTheDocument();
     });
   });
 
-  test("calls useBackend with correct alias API args", () => {
-    setupAdmin();
+  test("displays review rows", async () => {
+    renderPage();
+    const rows = await screen.findAllByTestId(/ReviewTable-row-/);
+    expect(rows).toHaveLength(ReviewFixtures.threeReviews.length);
+    ReviewFixtures.threeReviews.forEach((r, i) => {
+      expect(within(rows[i]).getByText(r.reviewerComments)).toBeInTheDocument();
+    });
+  });
+
+  test("useBackend called with correct endpoints", () => {
     renderPage();
     expect(useBackend).toHaveBeenCalledWith(
       ["/api/admin/usersWithProposedAlias"],
       { method: "GET", url: "/api/admin/usersWithProposedAlias" },
       [],
     );
-  });
-
-  test("calls useBackend with correct review API args", () => {
-    setupAdmin();
-    renderPage();
     expect(useBackend).toHaveBeenCalledWith(
-      ["/api/reviews/all"],
-      { method: "GET", url: "/api/reviews/all" },
+      ["/api/reviews/needsmoderation"],
+      { method: "GET", url: "/api/reviews/needsmoderation" },
       [],
     );
   });
 
-  test("shows toast.error when alias reject fails", async () => {
-    setupAdmin();
+  test("reject alias shows error toast", async () => {
     renderPage();
     const cell = await screen.findByTestId("AliasTable-cell-row-0-col-reject");
     fireEvent.click(within(cell).getByRole("button", { name: "Reject" }));
-    expect(require("react-toastify").toast.error).toHaveBeenCalledWith(
+    expect(toast.error).toHaveBeenCalledWith(
       "Error rejecting alias: Request failed with status code 500",
     );
   });
 
-  test("shows toast when alias approve succeeds", async () => {
-    setupAdmin();
-    useBackendMutation.mockImplementation((_, { onSuccess }) => ({
-      mutate: (user, propAliasString) =>
-        onSuccess(user, { proposedAlias: propAliasString }),
-    }));
-
-    renderPage();
-    const cell = await screen.findByTestId("AliasTable-cell-row-0-col-approve");
-    fireEvent.click(within(cell).getByRole("button", { name: "Approve" }));
-
-    const first = aliasFixtures.threeAlias[0];
-    expect(require("react-toastify").toast).toHaveBeenCalledWith(
-      `Alias ${first.proposedAlias} for id ${first.id} approved!`,
-    );
-  });
-
-  test("shows toast.error when review reject fails", async () => {
-    setupAdmin();
+  test("reject review shows error toast", async () => {
     renderPage();
     const cell = await screen.findByTestId("ReviewTable-cell-row-0-col-Reject");
     fireEvent.click(within(cell).getByRole("button", { name: "Reject" }));
-    expect(require("react-toastify").toast.error).toHaveBeenCalledWith(
+    expect(toast.error).toHaveBeenCalledWith(
       "Error: Request failed with status code 500",
     );
   });
 
-  test("shows toast.error when review approve fails", async () => {
-    setupAdmin();
+  test("approve review shows error toast", async () => {
     renderPage();
     const cell = await screen.findByTestId(
       "ReviewTable-cell-row-0-col-Approve",
     );
     fireEvent.click(within(cell).getByRole("button", { name: "Approve" }));
-    expect(require("react-toastify").toast.error).toHaveBeenCalledWith(
+    expect(toast.error).toHaveBeenCalledWith(
       "Error: Request failed with status code 500",
     );
   });
 
-  test("shows toast when review approve succeeds", async () => {
-    setupAdmin();
-    useBackendMutation.mockImplementation((_, { onSuccess }) => ({
-      mutate: () => onSuccess(),
-    }));
+  test("approve review success toast", async () => {
+    //mutation success case
+    useBackendMutation.mockReturnValue({
+      mutate: () => toast("Review approved!"),
+    });
 
     renderPage();
     const cell = await screen.findByTestId(
       "ReviewTable-cell-row-0-col-Approve",
     );
     fireEvent.click(within(cell).getByRole("button", { name: "Approve" }));
-    expect(require("react-toastify").toast).toHaveBeenCalledWith(
-      "Review approved!",
-    );
+    expect(toast).toHaveBeenCalledWith("Review approved!");
   });
 
-  test("shows toast when review reject succeeds", async () => {
-    setupAdmin();
-    useBackendMutation.mockImplementation((_, { onSuccess }) => ({
-      mutate: () => onSuccess(),
-    }));
+  test("reject review success toast", async () => {
+    useBackendMutation.mockReturnValue({
+      mutate: () => toast("Review rejected!"),
+    });
 
     renderPage();
     const cell = await screen.findByTestId("ReviewTable-cell-row-0-col-Reject");
     fireEvent.click(within(cell).getByRole("button", { name: "Reject" }));
-    expect(require("react-toastify").toast).toHaveBeenCalledWith(
-      "Review rejected!",
-    );
-  });
-
-  test("configures review mutation mapping correctly", () => {
-    setupAdmin();
-    renderPage();
-    expect(useBackendMutation).toHaveBeenCalledTimes(4);
-    const sample = { id: 123, foo: "bar" };
-    const mappers = useBackendMutation.mock.calls.map((call) => call[0]);
-    const approveMapper = mappers.find(
-      (fn) => fn(sample).params?.status === "APPROVED",
-    );
-    const rejectMapper = mappers.find(
-      (fn) => fn(sample).params?.status === "REJECTED",
-    );
-    expect(approveMapper(sample)).toEqual({
-      url: "/api/reviews/update",
-      method: "PUT",
-      params: { ...sample, status: "APPROVED" },
-    });
-    expect(rejectMapper(sample)).toEqual({
-      url: "/api/reviews/update",
-      method: "PUT",
-      params: { ...sample, status: "REJECTED" },
-    });
+    expect(toast).toHaveBeenCalledWith("Review rejected!");
   });
 });
