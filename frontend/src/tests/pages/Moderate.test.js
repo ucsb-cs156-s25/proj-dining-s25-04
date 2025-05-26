@@ -19,8 +19,8 @@ import { toast } from "react-toastify";
 jest.mock("main/utils/useBackend");
 
 jest.mock("react-toastify", () => {
-  const t = jest.fn(); 
-  t.error = jest.fn(); 
+  const t = jest.fn(); // toast is now a jest.fn()
+  t.error = jest.fn(); // toast.error remains a mock fn
   return { toast: t };
 });
 
