@@ -17,16 +17,20 @@ export default function Moderate() {
   );
 
   const { data: reviewData } = useBackend(
-    ["/api/reviews/all"],
-    { method: "GET", url: "/api/reviews/all" },
+    ["/api/reviews/needsmoderation"],
+    { method: "GET", url: "/api/reviews/needsmoderation" },
     [],
   );
 
   const approveReviewMutation = useBackendMutation(
     (review) => ({
-      url: "/api/reviews/update",
+      url: "/api/reviews/moderate",
       method: "PUT",
-      params: { ...review, status: "APPROVED" },
+      params: {
+        id: review.id,
+        status: "APPROVED",
+        moderatorComments: comments,
+      },
     }),
     {
       onSuccess: () => toast("Review approved!"),
@@ -36,9 +40,13 @@ export default function Moderate() {
 
   const rejectReviewMutation = useBackendMutation(
     (review) => ({
-      url: "/api/reviews/update",
+      url: "/api/reviews/moderate",
       method: "PUT",
-      params: { ...review, status: "REJECTED" },
+      params: {
+        id: review.id,
+        status: "APPROVED",
+        moderatorComments: comments,
+      },
     }),
     {
       onSuccess: () => toast("Review rejected!"),
