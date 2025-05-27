@@ -8,7 +8,7 @@ import { useBackend, useBackendMutation } from "main/utils/useBackend";
 import { toast } from "react-toastify";
 
 export default function Moderate() {
-  const { data: currentUser } = useCurrentUser();
+  const { data: currentUser = {} } = useCurrentUser();
 
   const { data: aliasData } = useBackend(
     ["/api/admin/usersWithProposedAlias"],
@@ -17,20 +17,16 @@ export default function Moderate() {
   );
 
   const { data: reviewData } = useBackend(
-    ["/api/reviews/needsmoderation"],
-    { method: "GET", url: "/api/reviews/needsmoderation" },
+    ["/api/reviews/all"],
+    { method: "GET", url: "/api/reviews/all" },
     [],
   );
 
   const approveReviewMutation = useBackendMutation(
     (review) => ({
-      url: "/api/reviews/moderate",
+      url: "/api/reviews/update",
       method: "PUT",
-      params: {
-        id: review.id,
-        status: "APPROVED",
-        moderatorComments: "",
-      },
+      params: { ...review, status: "APPROVED" },
     }),
     {
       onSuccess: () => toast("Review approved!"),
@@ -40,13 +36,9 @@ export default function Moderate() {
 
   const rejectReviewMutation = useBackendMutation(
     (review) => ({
-      url: "/api/reviews/moderate",
+      url: "/api/reviews/update",
       method: "PUT",
-      params: {
-        id: review.id,
-        status: "REJECTED",
-        moderatorComments: "",
-      },
+      params: { ...review, status: "REJECTED" },
     }),
     {
       onSuccess: () => toast("Review rejected!"),
@@ -68,6 +60,7 @@ export default function Moderate() {
 
         <h3 className="mt-4">Review Submissions</h3>
         <ReviewTable
+          testid="ReviewTable"
           data={reviewData}
           moderatorOptions={true}
           onApprove={approveReviewMutation.mutate}
