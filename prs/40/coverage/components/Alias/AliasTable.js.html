@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">87.5% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>4/8</span>
+                <span class='fraction'>7/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">83.33% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>2/6</span>
+                <span class='fraction'>5/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">25% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/4</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">87.5% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>4/8</span>
+                <span class='fraction'>7/8</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -107,29 +107,29 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from "react";
 import OurTable, { ButtonColumn } from "main/components/OurTable";
@@ -141,29 +141,29 @@ export default function AliasTable({ aliases, onApprove, onReject }) {
     {
       Header: "Proposed Alias",
       accessor: "proposedAlias",
-      Cell: <span class="fstat-no" title="function not covered" >({</span> value }) =&gt; <span class="cstat-no" title="statement not covered" >value || "(No proposed alias)",</span>
+      Cell: ({ value }) =&gt; value || "(No proposed alias)",
     },
     ButtonColumn(
       "Approve",
       "primary",
-<span class="fstat-no" title="function not covered" >      (c</span>ell) =&gt; <span class="cstat-no" title="statement not covered" >onApprove(cell.row.original),</span>
+      (cell) =&gt; onApprove(cell.row.original),
       testid,
     ),
     ButtonColumn(
       "Reject",
       "danger",
-<span class="fstat-no" title="function not covered" >      (c</span>ell) =&gt; <span class="cstat-no" title="statement not covered" >onReject(cell.row.original),</span>
+      (cell) =&gt; onReject(cell.row.original),
       testid,
     ),
   ];
 &nbsp;
-  <span class="missing-if-branch" title="else path not taken" >E</span>if (!aliases || <span class="branch-1 cbranch-no" title="branch not covered" >aliases.length === 0)</span> {
-    return (
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (!aliases || aliases.length === 0) {
+<span class="cstat-no" title="statement not covered" >    return (</span>
       &lt;div data-testid={`${testid}-empty`}&gt;No aliases awaiting approval&lt;/div&gt;
     );
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return &lt;OurTable data={aliases} columns={columns} testid={testid} /&gt;;</span>
+  return &lt;OurTable data={aliases} columns={columns} testid={testid} /&gt;;
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -172,7 +172,7 @@ export default function AliasTable({ aliases, onApprove, onReject }) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-05-27T12:23:28.085Z
+                at 2025-05-27T12:24:07.017Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
