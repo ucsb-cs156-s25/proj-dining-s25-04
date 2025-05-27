@@ -5,12 +5,10 @@ import AdminUsersPage from "main/pages/AdminUsersPage";
 import MenuItemPage from "main/pages/MenuItem/MenuItemPage";
 
 import PlaceholderIndexPage from "main/pages/Placeholder/PlaceholderIndexPage";
-import PlaceholderCreatePage from "main/pages/Placeholder/PlaceholderCreatePage";
-import PlaceholderEditPage from "main/pages/Placeholder/PlaceholderEditPage";
 
 import MyReviewsIndexPage from "main/pages/MyReviews/MyReviewsIndexPage";
 import ReviewsCreatePage from "main/pages/Reviews/ReviewsCreatePage";
-import ReviewsEditPage from "main/pages/Reviews/ReviewsEditPage";
+import ReviewEditPage from "main/pages/MyReviews/ReviewEditPage";
 
 import MealTimesPage from "main/pages/Meal/MealTimesPage";
 
@@ -38,12 +36,14 @@ function App() {
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/moderate" element={<Moderate />} />
             <Route
-              path="/placeholder/create"
-              element={<PlaceholderCreatePage />}
+              exact
+              path="/myreviews/edit/:id"
+              element={<ReviewEditPage />}
             />
             <Route
-              path="/placeholder/edit/:id"
-              element={<PlaceholderEditPage />}
+              exact
+              path="/reviews/post/:id"
+              element={<ReviewsCreatePage />}
             />
           </>
         )}
@@ -58,8 +58,8 @@ function App() {
             <Route path="/reviews/post/:id" element={<ReviewsCreatePage />} />
             <Route
               exact
-              path="/reviews/edit/:id"
-              element={<ReviewsEditPage />}
+              path="/myreviews/edit/:id"
+              element={<ReviewEditPage />}
             />
             <Route path="/placeholder" element={<PlaceholderIndexPage />} />
           </>
