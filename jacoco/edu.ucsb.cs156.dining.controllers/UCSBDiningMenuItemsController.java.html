@@ -4,7 +4,10 @@ import edu.ucsb.cs156.dining.services.UCSBDiningMenuItemsService;
 import edu.ucsb.cs156.dining.models.Entree;
 import edu.ucsb.cs156.dining.entities.MenuItem;
 import edu.ucsb.cs156.dining.repositories.MenuItemRepository;
+import edu.ucsb.cs156.dining.repositories.ReviewRepository;
+
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 
 import edu.ucsb.cs156.dining.errors.EntityNotFoundException;
@@ -32,17 +35,21 @@ import jakarta.validation.Valid;
 @Tag(name = &quot;UCSBDiningMenuItems&quot;)
 @RestController
 @RequestMapping(&quot;/api/diningcommons&quot;)
-<span class="fc" id="L35">@Slf4j</span>
-<span class="fc" id="L36">public class UCSBDiningMenuItemsController extends ApiController {</span>
+<span class="fc" id="L38">@Slf4j</span>
+<span class="fc" id="L39">public class UCSBDiningMenuItemsController extends ApiController {</span>
 
-  @Autowired UCSBDiningMenuItemsService ucsbDiningMenuItemsService;
+  @Autowired 
+  UCSBDiningMenuItemsService ucsbDiningMenuItemsService;
   
   @Autowired
   MenuItemRepository menuItemRepository;
 
-  @Operation(summary = &quot;Get list of entrees being served at given meal, dining common, and day&quot;)
+  @Autowired
+  ReviewRepository reviewRepository;
+
+  @Operation(summary = &quot;Get list of entrees being served at given meal, dining common, and day, with average rating&quot;)
   @GetMapping(value = &quot;/{date-time}/{dining-commons-code}/{meal-code}&quot;, produces = &quot;application/json&quot;)
-  public ResponseEntity&lt;List&lt;MenuItem&gt;&gt; get_menu_items(
+  public ResponseEntity&lt;List&lt;MenuItemWithAvg&gt;&gt; get_menu_items(
       @Parameter(description= &quot;date (in iso format, e.g. YYYY-mm-dd) or date-time (in iso format e.g. YYYY-mm-ddTHH:MM:SS)&quot;) 
       @PathVariable(&quot;date-time&quot;) String datetime,
       @PathVariable(&quot;dining-commons-code&quot;) String diningcommoncode,
@@ -50,26 +57,36 @@ import jakarta.validation.Valid;
   )
     throws Exception {
 
-<span class="fc" id="L53">    List&lt;Entree&gt; body = ucsbDiningMenuItemsService.get(datetime, diningcommoncode, mealcode);</span>
+<span class="fc" id="L60">    List&lt;Entree&gt; body = ucsbDiningMenuItemsService.get(datetime, diningcommoncode, mealcode);</span>
 
-<span class="fc" id="L55">    List&lt;MenuItem&gt; menuitems = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L62">    List&lt;MenuItem&gt; menuItems = new ArrayList&lt;&gt;();</span>
 
-<span class="fc bfc" id="L57" title="All 2 branches covered.">    for (Entree entree : body) {</span>
-<span class="fc" id="L58">        Optional&lt;MenuItem&gt; exists = menuItemRepository.findByDiningCommonsCodeAndMealCodeAndNameAndStation(diningcommoncode, mealcode, entree.getName(), entree.getStation());</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">    for (Entree entree : body) {</span>
+<span class="fc" id="L65">        Optional&lt;MenuItem&gt; exists = menuItemRepository.findByDiningCommonsCodeAndMealCodeAndNameAndStation(diningcommoncode, mealcode, entree.getName(), entree.getStation());</span>
 
-<span class="fc" id="L60">        MenuItem newMenuItem = exists.orElse(new MenuItem());</span>
-<span class="fc" id="L61">          newMenuItem.setDiningCommonsCode(diningcommoncode);</span>
-<span class="fc" id="L62">          newMenuItem.setMealCode(mealcode);</span>
-<span class="fc" id="L63">          newMenuItem.setName(entree.getName());</span>
-<span class="fc" id="L64">          newMenuItem.setStation(entree.getStation());</span>
+<span class="fc" id="L67">        MenuItem newMenuItem = exists.orElse(new MenuItem());</span>
+<span class="fc" id="L68">          newMenuItem.setDiningCommonsCode(diningcommoncode);</span>
+<span class="fc" id="L69">          newMenuItem.setMealCode(mealcode);</span>
+<span class="fc" id="L70">          newMenuItem.setName(entree.getName());</span>
+<span class="fc" id="L71">          newMenuItem.setStation(entree.getStation());</span>
 
-<span class="fc" id="L66">          menuItemRepository.save(newMenuItem);</span>
-<span class="fc" id="L67">          menuitems.add(newMenuItem);</span>
-<span class="fc" id="L68">    }</span>
+<span class="fc" id="L73">          menuItemRepository.save(newMenuItem);</span>
+<span class="fc" id="L74">          menuItems.add(newMenuItem);</span>
+<span class="fc" id="L75">    }</span>
+    
+<span class="fc" id="L77">    List&lt;MenuItemWithAvg&gt; withAvgs = buildMenuItemWithAvgList(menuItems);</span>
 
-<span class="fc" id="L70">    return ResponseEntity.ok().body(menuitems);</span>
+<span class="fc" id="L79">    return ResponseEntity.ok().body(withAvgs);</span>
   }
 
+  private List&lt;MenuItemWithAvg&gt; buildMenuItemWithAvgList(List&lt;MenuItem&gt; items) {
+<span class="fc" id="L83">    return items.stream().map(item -&gt; {</span>
+<span class="fc" id="L84">        Double avg = reviewRepository.findAverageScoreByItemId(item.getId()).orElse(null);</span>
+<span class="fc" id="L85">        return new MenuItemWithAvg(item.getId(), item.getDiningCommonsCode(), item.getMealCode(), item.getName(), item.getStation(), avg);</span>
+<span class="fc" id="L86">      }).collect(Collectors.toList());</span>
+  }
+
+  
 
   @Operation(summary = &quot;Get a single menu item by id&quot;)
   @GetMapping(value = &quot;/menuitem&quot;, produces = &quot;application/json&quot;)
@@ -79,11 +96,36 @@ import jakarta.validation.Valid;
   )
     throws Exception {
 
-<span class="fc" id="L82">      MenuItem menuItem = menuItemRepository.findById(id)</span>
-<span class="fc" id="L83">          .orElseThrow(() -&gt; new EntityNotFoundException(MenuItem.class, id));</span>
+<span class="fc" id="L99">      MenuItem menuItem = menuItemRepository.findById(id)</span>
+<span class="fc" id="L100">          .orElseThrow(() -&gt; new EntityNotFoundException(MenuItem.class, id));</span>
 
-<span class="fc" id="L85">      return ResponseEntity.ok().body(menuItem);</span>
+<span class="fc" id="L102">      return ResponseEntity.ok().body(menuItem);</span>
       
     }
 }
+
+class MenuItemWithAvg {
+    private Long id;
+    private String diningCommonsCode;
+    private String mealCode;
+    private String name;
+    private String station;
+    private Double averageRating;
+
+<span class="fc" id="L115">    public MenuItemWithAvg(Long id, String diningCommonsCode, String mealCode, String name, String station, Double averageRating) {</span>
+<span class="fc" id="L116">        this.id = id;</span>
+<span class="fc" id="L117">        this.diningCommonsCode = diningCommonsCode;</span>
+<span class="fc" id="L118">        this.mealCode = mealCode;</span>
+<span class="fc" id="L119">        this.name = name;</span>
+<span class="fc" id="L120">        this.station = station;</span>
+<span class="fc" id="L121">        this.averageRating = averageRating;</span>
+<span class="fc" id="L122">    }</span>
+
+<span class="fc" id="L124">    public Long getId() { return id; }</span>
+<span class="fc" id="L125">    public String getDiningCommonsCode() { return diningCommonsCode; }</span>
+<span class="fc" id="L126">    public String getMealCode(){ return mealCode; }</span>
+<span class="fc" id="L127">    public String getName() { return name; }</span>
+<span class="fc" id="L128">    public String getStation() { return station; }</span>
+<span class="fc" id="L129">    public Double getAverageRating() { return averageRating; }</span>
+  }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
