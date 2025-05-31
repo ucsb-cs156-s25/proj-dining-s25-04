@@ -1,72 +1,71 @@
 import React from "react";
-import { useCurrentUser, hasRole } from "main/utils/currentUser";
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router";
 import BasicLayout from "main/layouts/BasicLayout/BasicLayout";
 import AliasTable from "main/components/Alias/AliasTable";
 import ReviewTable from "main/components/Reviews/ReviewTable";
-import { useBackend, useBackendMutation } from "main/utils/useBackend";
+import { useCurrentUser, hasRole } from "main/utils/currentUser";
+import { useBackend } from "main/utils/useBackend";
+import axios from "axios";
 import { toast } from "react-toastify";
 
 export default function Moderate() {
-  const { data: currentUser = {} } = useCurrentUser();
+  const { data: currentUser } = useCurrentUser();
 
-  const { data: aliasData } = useBackend(
-    ["/api/admin/usersWithProposedAlias"],
-    { method: "GET", url: "/api/admin/usersWithProposedAlias" },
-    [],
-  );
+  // 1) fetch aliases
+  const { data: aliases } = useBackend(["/api/admin/usersWithProposedAlias"], {
+    method: "GET",
+    url: "/api/admin/usersWithProposedAlias",
+  });
 
-  const { data: reviewData } = useBackend(
-    ["/api/reviews/all"],
-    { method: "GET", url: "/api/reviews/all" },
-    [],
-  );
+  // 2) fetch reviews
+  const { data: reviews } = useBackend(["/api/reviews/needsmoderation"], {
+    method: "GET",
+    url: "/api/reviews/needsmoderation",
+  });
 
-  const approveReviewMutation = useBackendMutation(
-    (review) => ({
-      url: "/api/reviews/update",
-      method: "PUT",
-      params: { ...review, status: "APPROVED" },
-    }),
-    {
-      onSuccess: () => toast("Review approved!"),
-      onError: (err) => toast.error(`Error: ${err.message}`),
-    },
-  );
-
-  const rejectReviewMutation = useBackendMutation(
-    (review) => ({
-      url: "/api/reviews/update",
-      method: "PUT",
-      params: { ...review, status: "REJECTED" },
-    }),
-    {
-      onSuccess: () => toast("Review rejected!"),
-      onError: (err) => toast.error(`Error: ${err.message}`),
-    },
-  );
-
-  if (!currentUser.loggedIn || !hasRole(currentUser, "ROLE_ADMIN")) {
+  // permission guard
+  if (
+    !currentUser.loggedIn ||
+    (!hasRole(currentUser, "ROLE_ADMIN") &&
+      !hasRole(currentUser, "ROLE_MODERATOR"))
+  ) {
     return <Navigate to="/" />;
   }
 
+  // 3) alias handlers
+  const handleApproveAlias = async (a) => {
+    try {
+      await axios.put("/api/currentUser/updateAliasModeration", null, {
+        params: { id: a.id, approved: true },
+      });
+      toast.success(`Alias "${a.proposedAlias}" for ID ${a.id} approved!`);
+    } catch (err) {
+      toast.error(`Error approving alias: ${err.message || "Unknown error"}`);
+    }
+  };
+  const handleRejectAlias = async (a) => {
+    try {
+      await axios.put("/api/currentUser/updateAliasModeration", null, {
+        params: { id: a.id, approved: false },
+      });
+      toast.success(`Alias "${a.proposedAlias}" for ID ${a.id} rejected!`);
+    } catch (err) {
+      toast.error(`Error rejecting alias: ${err.message || "Unknown error"}`);
+    }
+  };
+
   return (
-    <BasicLayout>
-      <div className="pt-2">
-        <h2>Moderation Page</h2>
-
-        <h3>Alias Proposals</h3>
-        <AliasTable alias={aliasData} />
-
-        <h3 className="mt-4">Review Submissions</h3>
-        <ReviewTable
-          testid="ReviewTable"
-          data={reviewData}
-          moderatorOptions={true}
-          onApprove={approveReviewMutation.mutate}
-          onReject={rejectReviewMutation.mutate}
-        />
-      </div>
+    <BasicLayout id="moderate-page">
+      <h1>Moderation Page</h1>
+      <p>
+        This page is accessible only to admins and moderators. (Placeholder)
+      </p>
+      <AliasTable
+        aliases={aliases || []}
+        onApprove={handleApproveAlias}
+        onReject={handleRejectAlias}
+      />
+      <ReviewTable data={reviews || []} moderatorOptions={true} />
     </BasicLayout>
   );
 }
