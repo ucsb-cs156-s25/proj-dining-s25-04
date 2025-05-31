@@ -1,9 +1,9 @@
 import React from "react";
 import { http, HttpResponse } from "msw";
 import Moderate from "main/pages/Moderate";
-import aliasFixtures from "fixtures/aliasFixtures";
-import { ReviewFixtures } from "fixtures/reviewFixtures";
+import usersFixtures from "fixtures/usersFixtures";
 import { apiCurrentUserFixtures } from "fixtures/currentUserFixtures";
+import { ReviewFixtures } from "fixtures/reviewFixtures";
 
 export default {
   title: "pages/Moderate",
@@ -16,9 +16,9 @@ export const LoggedOut = Template.bind({});
 LoggedOut.parameters = {
   msw: {
     handlers: [
-      http.get("/api/currentUser", () =>
-        HttpResponse.json(null, { status: 403 }),
-      ),
+      http.get("/api/currentUser", () => {
+        return HttpResponse.json(null, { status: 403 });
+      }),
     ],
   },
 };
@@ -27,9 +27,9 @@ export const NoAdminRole = Template.bind({});
 NoAdminRole.parameters = {
   msw: {
     handlers: [
-      http.get("/api/currentUser", () =>
-        HttpResponse.json(apiCurrentUserFixtures.userOnly),
-      ),
+      http.get("/api/currentUser", () => {
+        return HttpResponse.json(apiCurrentUserFixtures.userOnly);
+      }),
     ],
   },
 };
@@ -38,15 +38,15 @@ export const AdminView = Template.bind({});
 AdminView.parameters = {
   msw: {
     handlers: [
-      http.get("/api/currentUser", () =>
-        HttpResponse.json(apiCurrentUserFixtures.adminUser),
-      ),
-      http.get("/api/admin/usersWithProposedAlias", () =>
-        HttpResponse.json(aliasFixtures.threeAlias),
-      ),
-      http.get("/api/reviews/all", () =>
-        HttpResponse.json(ReviewFixtures.threeReviews),
-      ),
+      http.get("/api/currentUser", () => {
+        return HttpResponse.json(apiCurrentUserFixtures.adminUser);
+      }),
+      http.get("/api/admin/usersWithProposedAlias", () => {
+        return HttpResponse.json(usersFixtures.threeUsers);
+      }),
+      http.get("/api/reviews/needsmoderation", () => {
+        return HttpResponse.json(ReviewFixtures.threeReviews);
+      }),
     ],
   },
 };
