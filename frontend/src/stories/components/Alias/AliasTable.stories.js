@@ -1,14 +1,14 @@
 import React from "react";
 import AliasTable from "main/components/Alias/AliasTable";
-import aliasFixtures from "fixtures/aliasFixtures";
+import usersFixtures from "fixtures/usersFixtures";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { action } from "@storybook/addon-actions";
 
 export default {
   title: "components/Alias/AliasTable",
   component: AliasTable,
   decorators: [
     (Story) => {
-      // Wrap stories with React Query context
       const queryClient = new QueryClient();
       return (
         <QueryClientProvider client={queryClient}>
@@ -21,17 +21,16 @@ export default {
 
 const Template = (args) => <AliasTable {...args} />;
 
-export const OneAlias = Template.bind({});
-OneAlias.args = {
-  alias: aliasFixtures.oneAlias,
+export const EmptyTable = Template.bind({});
+EmptyTable.args = {
+  aliases: [],
+  onApprove: action("onApprove"),
+  onReject: action("onReject"),
 };
 
-export const NullPropAlias = Template.bind({});
-NullPropAlias.args = {
-  alias: aliasFixtures.nullPropAlias,
-};
-
-export const ThreeAlias = Template.bind({});
-ThreeAlias.args = {
-  alias: aliasFixtures.threeAlias,
+export const ThreeUsers = Template.bind({});
+ThreeUsers.args = {
+  aliases: usersFixtures.threeUsers,
+  onApprove: action("onApprove"),
+  onReject: action("onReject"),
 };
