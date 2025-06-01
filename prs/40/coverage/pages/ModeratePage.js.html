@@ -153,12 +153,7 @@
 <a name='L88'></a><a href='#L88'>88</a>
 <a name='L89'></a><a href='#L89'>89</a>
 <a name='L90'></a><a href='#L90'>90</a>
-<a name='L91'></a><a href='#L91'>91</a>
-<a name='L92'></a><a href='#L92'>92</a>
-<a name='L93'></a><a href='#L93'>93</a>
-<a name='L94'></a><a href='#L94'>94</a>
-<a name='L95'></a><a href='#L95'>95</a>
-<a name='L96'></a><a href='#L96'>96</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L91'></a><a href='#L91'>91</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -176,20 +171,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -206,13 +187,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -229,17 +209,27 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -265,25 +255,11 @@ import { toast } from "react-toastify";
 export default function ModeratePage() {
   const { data: currentUser } = useCurrentUser();
 &nbsp;
-  const { data: aliases } = useBackend(["/api/admin/usersWithProposedAlias"], {
-    method: "GET",
-    url: "/api/admin/usersWithProposedAlias",
-  });
-&nbsp;
-  if (
-    !currentUser.loggedIn ||
-    (!hasRole(currentUser, "ROLE_ADMIN") &amp;&amp;
-      !hasRole(currentUser, "ROLE_MODERATOR"))
-  ) {
-    return &lt;Navigate to="/" /&gt;;
-  }
-&nbsp;
   const objectToAxiosParamsApprove = <span class="fstat-no" title="function not covered" >(a</span>lias) =&gt; (<span class="cstat-no" title="statement not covered" >{</span>
     url: "/api/currentUser/updateAliasModeration",
     method: "PUT",
     params: { id: alias.id, approved: true },
   });
-&nbsp;
   const approveMutation = useBackendMutation(
     objectToAxiosParamsApprove,
     ["/api/admin/usersWithProposedAlias"],
@@ -306,7 +282,6 @@ export default function ModeratePage() {
     method: "PUT",
     params: { id: alias.id, approved: false },
   });
-&nbsp;
   const rejectMutation = useBackendMutation(
     objectToAxiosParamsReject,
     ["/api/admin/usersWithProposedAlias"],
@@ -324,10 +299,22 @@ export default function ModeratePage() {
     },
   );
 &nbsp;
+  const { data: aliases } = useBackend(["/api/admin/usersWithProposedAlias"], {
+    method: "GET",
+    url: "/api/admin/usersWithProposedAlias",
+  });
+&nbsp;
+  if (
+    !currentUser.loggedIn ||
+    (!hasRole(currentUser, "ROLE_ADMIN") &amp;&amp;
+      !hasRole(currentUser, "ROLE_MODERATOR"))
+  ) {
+    return &lt;Navigate to="/" /&gt;;
+  }
+&nbsp;
   const handleApprove = (alias) =&gt; {
     approveMutation.mutate(alias);
   };
-&nbsp;
   const handleReject = (alias) =&gt; {
     rejectMutation.mutate(alias);
   };
@@ -336,9 +323,7 @@ export default function ModeratePage() {
     &lt;BasicLayout id="moderatePage" data-testid="moderatePage"&gt;
       &lt;div className="pt-2"&gt;
         &lt;h1&gt;Moderation Page&lt;/h1&gt;
-        &lt;p&gt;
-          This page is accessible only to admins and moderators. (Placeholder)
-        &lt;/p&gt;
+        &lt;p&gt;This page is accessible only to admins and moderators.&lt;/p&gt;
         &lt;AliasTable
           aliases={aliases || <span class="branch-1 cbranch-no" title="branch not covered" >[]}</span>
           onApprove={handleApprove}
@@ -355,7 +340,7 @@ export default function ModeratePage() {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-01T02:57:54.274Z
+                at 2025-06-01T02:58:14.395Z
             </div>
         <script src="../prettify.js"></script>
         <script>
